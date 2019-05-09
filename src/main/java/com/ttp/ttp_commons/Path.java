@@ -31,43 +31,47 @@ public class Path {
         this.to = to;
     }
     
-    public void CalculateDirections(GeoApiContext mGeoApiContext, String mode, boolean async) throws ApiException, InterruptedException, IOException{
-        if(async){
-            final DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
-            directions.alternatives(false);
-            directions.mode(TravelMode.valueOf(mode));
-            directions.origin(new com.google.maps.model.LatLng(from.getLocation().lat, from.getLocation().lng));
-            directions.destination(new com.google.maps.model.LatLng(to.getLocation().lat, to.getLocation().lng))
-                    .setCallback(new PendingResult.Callback<DirectionsResult>() {
-                        @Override
-                        public void onResult(DirectionsResult result) {
-                            direction = result;
-                            distance = 0;
-                            for(DirectionsRoute route : direction.routes){
-                                for(DirectionsLeg leg : route.legs){
-                                    distance += leg.distance.inMeters;
-                                }
+    public void calculateDirections(GeoApiContext mGeoApiContext, String mode){
+        final DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
+        directions.alternatives(false);
+        directions.mode(TravelMode.valueOf(mode));
+        directions.origin(new com.google.maps.model.LatLng(from.getLocation().lat, from.getLocation().lng));
+        directions.destination(new com.google.maps.model.LatLng(to.getLocation().lat, to.getLocation().lng))
+            .setCallback(new PendingResult.Callback<DirectionsResult>() {
+                @Override
+                public void onResult(DirectionsResult result) {
+                    if(result.routes.length > 0){
+                        direction = result;
+                        distance = 0;
+                        for(DirectionsRoute route : direction.routes){
+                            for(DirectionsLeg leg : route.legs){
+                                distance += leg.distance.inMeters;
                             }
                         }
+                    } else {
+                        direction = null;
+                        distance = 0;
+                    }
+                }
 
-                        @Override
-                        public void onFailure(Throwable e) {
-                            direction = null;
-                            distance = 0;
-                        }
-                    });
-        }else{
-            direction = DirectionsApi.newRequest(mGeoApiContext)
+                @Override
+                public void onFailure(Throwable e) {
+                    System.out.println(e.getMessage());
+                }
+            });
+}
+    
+    public void forceDirections(GeoApiContext mGeoApiContext, String mode) throws ApiException, InterruptedException, IOException{
+        direction = DirectionsApi.newRequest(mGeoApiContext)
                 .mode(TravelMode.valueOf(mode))
                 .origin(new com.google.maps.model.LatLng(from.getLocation().lat, from.getLocation().lng))
                 .destination(new com.google.maps.model.LatLng(to.getLocation().lat, to.getLocation().lng))
                 .await();
             
-            distance = 0;
-            for(DirectionsRoute route : direction.routes){
-                for(DirectionsLeg leg : route.legs){
-                    distance += leg.distance.inMeters;
-                }
+        distance = 0;
+        for(DirectionsRoute route : direction.routes){
+            for(DirectionsLeg leg : route.legs){
+                distance += leg.distance.inMeters;
             }
         }
     }

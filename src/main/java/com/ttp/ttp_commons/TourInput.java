@@ -5,29 +5,31 @@
  */
 package com.ttp.ttp_commons;
 
+import com.google.maps.model.LatLng;
+
 /**
  *
  * @author Graham
  */
 public class TourInput {
     private final String mode;
-    private final String[] locations;
+    private final LatLng[] locations;
     
-    public TourInput(String Mode, String[] Locations){
+    public TourInput(String Mode, LatLng[] Locations){
         mode = Mode;
         locations = Locations;
     }
     
-    public TourInput(String Mode, String Location){
+    public TourInput(String Mode, LatLng Location){
         mode = Mode;
-        locations = new String[]{Location};
+        locations = new LatLng[]{Location};
     }
     
     public String getMode(){
         return mode;
     }
     
-    public String[] getLocations(){
+    public LatLng[] getLocations(){
         return locations;
     }
 }
